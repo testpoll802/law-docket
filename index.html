@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Law Case Manager</title>
+    <style>
+        :root {
+            --bg: #f2f2f7;
+            --card-bg: #ffffff;
+            --primary: #1c3d5a;
+            --accent: #007aff;
+            --success: #34c759;
+            --danger: #ff3b30;
+            --text: #1c1c1e;
+            --border: #c6c6c8;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding-bottom: 50px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: calc(env(safe-area-inset-top) + 12px) 16px 12px 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+        }
+
+        header h1 { margin: 0 0 8px 0; font-size: 1.25rem; text-align: center; font-weight: 700; }
+
+        .status-banner {
+            background: var(--accent);
+            color: white;
+            font-size: 0.78rem;
+            text-align: center;
+            padding: 6px;
+            font-weight: 500;
+        }
+
+        .nav-bar { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-top: 6px; }
+
+        .nav-bar button {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 8px 10px;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            flex: 1;
+            min-width: 65px;
+            max-width: 110px;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-bar button:active { opacity: 0.7; }
+
+        main { padding: 12px; max-width: 600px; margin: 0 auto; }
+
+        .search-container { position: relative; margin-bottom: 12px; }
+        .search-input {
+            width: 100%; padding: 12px 14px; border-radius: 10px;
+            border: 1px solid #d1d1d6; font-size: 0.95rem;
+            box-sizing: border-box; background: white; outline: none;
+            -webkit-appearance: none;
+        }
+        .search-input:focus { border-color: var(--accent); }
+        .search-dropdown {
+            position: absolute; top: 100%; left: 0; right: 0;
+            background: white; border: 1px solid var(--border);
+            border-radius: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            z-index: 1000; max-height: 280px; overflow-y: auto; margin-top: 4px;
+        }
+        .search-result-item { padding: 12px; border-bottom: 1px solid #e5e5ea; cursor: pointer; }
+        .search-result-item:last-child { border-bottom: none; }
+        .search-result-item:active { background-color: #e5e5ea; }
+        .match-tag {
+            display: inline-block; font-size: 0.7rem; background-color: #e5e5ea;
+            color: #48484a; padding: 2px 6px; border-radius: 4px; font-weight: 600; margin-bottom: 3px;
+        }
+        .match-tag.hearing-tag { background-color: #ffe58f; color: #873800; }
+        .match-snippet { font-size: 0.85rem; color: #48484a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .card {
+            background: var(--card-bg); border-radius: 12px;
+            padding: 16px; margin-bottom: 12px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+
+        input[type="text"], input[type="datetime-local"], textarea {
+            width: 100%; padding: 12px; margin-bottom: 10px;
+            border: 1px solid #d1d1d6; border-radius: 8px;
+            box-sizing: border-box; font-size: 0.95rem; background: #fafafa;
+            -webkit-appearance: none;
+        }
+
+        textarea { height: 120px; resize: vertical; }
+
+        .btn {
+            padding: 10px 14px; border: none; border-radius: 8px;
+            font-size: 0.88rem; font-weight: 600; color: white; cursor: pointer;
+        }
+        .btn-primary { background-color: var(--accent); }
+        .btn-danger { background-color: var(--danger); }
+        .btn-success { background-color: var(--success); }
+        .btn-secondary { background-color: #8e8e93; }
+        .btn-small { padding: 6px 10px; font-size: 0.78rem; border-radius: 6px; }
+
+        .hearing-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 0; border-bottom: 1px solid #e5e5ea;
+        }
+        .hearing-item:last-child { border-bottom: none; }
+        .hearing-item.done { text-decoration: line-through; opacity: 0.5; }
+
+        .cal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 8px; background: white; padding: 10px; border-radius: 10px;
+        }
+        .cal-grid-wrapper {
+            background: white; border-radius: 10px; overflow-x: auto;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+        .cal-grid-header {
+            display: grid; grid-template-columns: repeat(7, 1fr);
+            background: var(--primary); color: white; text-align: center;
+            font-weight: 600; font-size: 0.75rem; padding: 8px 0; min-width: 480px;
+        }
+        .cal-grid-body {
+            display: grid; grid-template-columns: repeat(7, 1fr);
+            min-width: 480px; background: #e5e5ea; gap: 1px;
+        }
+        .cal-day {
+            background: white; min-height: 80px; padding: 4px;
+            box-sizing: border-box; display: flex; flex-direction: column;
+        }
+        .cal-day.other-month { background: #f2f2f7; opacity: 0.5; }
+        .cal-day.today { background: #e5f2ff; }
+        .cal-day.today .day-number {
+            background: var(--accent); color: white; border-radius: 50%;
+            width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center;
+        }
+        .day-number { font-size: 0.75rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+        .day-events { display: flex; flex-direction: column; gap: 3px; overflow-y: auto; max-height: 60px; }
+        .event-pill {
+            background: #e5f2ff; border-left: 3px solid var(--accent);
+            padding: 3px 4px; border-radius: 4px; font-size: 0.68rem; cursor: pointer; line-height: 1.2;
+        }
+        .event-pill.done { opacity: 0.5; text-decoration: line-through; border-left-color: var(--success); }
+        .event-time { font-weight: 700; color: var(--primary); font-size: 0.62rem; display: block; }
+        .event-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>⚖️ Law Docket Manager</h1>
+    <div class="nav-bar">
+        <button onclick="navigate('cases')">Cases</button>
+        <button onclick="navigate('calendar')">Calendar</button>
+        <button onclick="openSyncSettings()">⚙️ Sync</button>
+        <button onclick="exportJSON()">Backup</button>
+    </div>
+</header>
+
+<div class="status-banner" id="status-bar">
+    Status: Connecting to private cloud repository...
+</div>
+
+<main>
+    <div class="search-container">
+        <input type="text" class="search-input" id="global-search" 
+               placeholder="🔍 Search titles, notes, hearing summaries..." 
+               oninput="handleGlobalSearch(this.value)">
+        <div id="search-dropdown" class="search-dropdown hidden"></div>
+    </div>
+
+    <div id="app-content"></div>
+</main>
+
+<script>
+    let db = { cases: [] };
+    let currentCalDate = new Date();
+    let editingHearingId = null;
+    let editingTitleCaseId = null;
+    let isAddingCase = false;
+    let fileSha = null;
+    let debounceTimer = null;
+
+    // --- PRIVATE REPOSITORY SYNC ENGINE ---
+    function getGHConfig() {
+        return {
+            user: localStorage.getItem('gh_user') || '',
+            repo: localStorage.getItem('gh_private_repo') || 'law-docket-data',
+            token: localStorage.getItem('gh_pat_token') || ''
+        };
+    }
+
+    function setStatus(msg) {
+        document.getElementById('status-bar').innerText = `Status: ${msg}`;
+    }
+
+    async function loadFromPrivateRepo() {
+        const config = getGHConfig();
+        if (!config.user || !config.token || !config.repo) {
+            setStatus('Sync pending: Click "⚙️ Sync" to configure credentials.');
+            loadFromLocalStorage();
+            return;
+        }
+
+        try {
+            setStatus('Syncing from Private GitHub Repository...');
+            const url = `https://api.github.com/repos/${config.user}/${config.repo}/contents/law_docket_data.json`;
+            const res = await fetch(url, {
+                headers: {
+                    'Authorization': `token ${config.token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                fileSha = data.sha;
+                const decodedText = decodeURIComponent(escape(atob(data.content.replace(/\n/g, ''))));
+                db = JSON.parse(decodedText);
+                localStorage.setItem('law_db_auto', JSON.stringify(db));
+                setStatus('Synced & Secured via Private GitHub');
+                navigate('cases');
+            } else if (res.status === 404) {
+                setStatus('Private file initialized. Adding your first case will save it remotely.');
+                loadFromLocalStorage();
+            } else {
+                setStatus('GitHub auth error. Using local device backup.');
+                loadFromLocalStorage();
+            }
+        } catch (err) {
+            console.error("Private repo load error:", err);
+            setStatus('Offline Mode: Loaded from local device cache.');
+            loadFromLocalStorage();
+        }
+    }
+
+    async function syncToPrivateRepo() {
+        const config = getGHConfig();
+        if (!config.user || !config.token || !config.repo) {
+            setStatus('Saved locally. Configure "⚙️ Sync" to enable cloud backup.');
+            return;
+        }
+
+        try {
+            setStatus('Saving to Private Cloud...');
+            const jsonString = JSON.stringify(db, null, 2);
+            const contentBase64 = btoa(unescape(encodeURIComponent(jsonString)));
+
+            const url = `https://api.github.com/repos/${config.user}/${config.repo}/contents/law_docket_data.json`;
+            const payload = {
+                message: 'Update law docket data',
+                content: contentBase64
+            };
+            if (fileSha) payload.sha = fileSha;
+
+            const res = await fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${config.token}`,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/vnd.github.v3+json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                const resData = await res.json();
+                fileSha = resData.content.sha;
+                setStatus('Saved & Synced to Private Cloud');
+            } else {
+                setStatus('Cloud sync failed. Saved to device memory.');
+            }
+        } catch (err) {
+            console.error("Private repo save error:", err);
+            setStatus('Network error. Saved to device memory.');
+        }
+    }
+
+    function autoSave() {
+        localStorage.setItem('law_db_auto', JSON.stringify(db));
+        setStatus('Typing... (saving in 1.5s)');
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            syncToPrivateRepo();
+        }, 1500);
+    }
+
+    function loadFromLocalStorage() {
+        const localData = localStorage.getItem('law_db_auto');
+        if (localData) {
+            try { db = JSON.parse(localData); } catch(e){}
+        }
+        navigate('cases');
+    }
+
+    function openSyncSettings() {
+        const config = getGHConfig();
+        const user = prompt("Enter your GitHub Username:", config.user);
+        if (user === null) return;
+        
+        const repo = prompt("Enter Private Repository Name:", config.repo || 'law-docket-data');
+        if (repo === null) return;
+
+        const token = prompt("Enter your GitHub Token (PAT):", config.token);
+        if (token === null) return;
+
+        localStorage.setItem('gh_user', user.trim());
+        localStorage.setItem('gh_private_repo', repo.trim());
+        localStorage.setItem('gh_pat_token', token.trim());
+
+        loadFromPrivateRepo();
+    }
+
+    // --- MANUAL BACKUP ---
+    async function exportJSON() {
+        const jsonStr = JSON.stringify(db, null, 2);
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const file = new File([blob], 'law_docket_data.json', { type: 'application/json' });
+
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            try {
+                await navigator.share({ files: [file], title: 'law_docket_data.json' });
+                return;
+            } catch (err) { if (err.name === 'AbortError') return; }
+        }
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'law_docket_data.json';
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    // --- SEARCH LOGIC ---
+    function handleGlobalSearch(query) {
+        const dropdown = document.getElementById('search-dropdown');
+        const term = query.trim().toLowerCase();
+
+        if (!term) {
+            dropdown.innerHTML = '';
+            dropdown.classList.add('hidden');
+            return;
+        }
+
+        let results = [];
+
+        db.cases.forEach(c => {
+            if (c.title && c.title.toLowerCase().includes(term)) {
+                results.push({ caseId: c.id, caseTitle: c.title, tag: 'Case Title', isHearing: false, snippet: c.title });
+            }
+
+            if (c.notes && c.notes.toLowerCase().includes(term)) {
+                const idx = c.notes.toLowerCase().indexOf(term);
+                const start = Math.max(0, idx - 15);
+                const end = Math.min(c.notes.length, idx + term.length + 25);
+                const snippetText = (start > 0 ? '...' : '') + c.notes.substring(start, end) + (end < c.notes.length ? '...' : '');
+
+                results.push({ caseId: c.id, caseTitle: c.title, tag: 'Notes', isHearing: false, snippet: snippetText });
+            }
+
+            if (c.hearings && c.hearings.length > 0) {
+                c.hearings.forEach(h => {
+                    if (h.title && h.title.toLowerCase().includes(term)) {
+                        results.push({
+                            caseId: c.id, caseTitle: c.title, tag: 'Hearing Summary', isHearing: true,
+                            snippet: `📅 ${formatDateTime(h.date)} — ${h.title}`
+                        });
+                    }
+                });
+            }
+        });
+
+        if (results.length === 0) {
+            dropdown.innerHTML = `<div style="padding:12px; color:#8e8e93; font-size:0.85rem; text-align:center;">No matching records found</div>`;
+        } else {
+            dropdown.innerHTML = results.map(r => `
+                <div class="search-result-item" onclick="openCaseFromSearch('${r.caseId}')">
+                    <div style="font-weight:700; font-size:0.95rem; color:var(--primary);">${r.caseTitle}</div>
+                    <span class="match-tag ${r.isHearing ? 'hearing-tag' : ''}">${r.tag}</span>
+                    <div class="match-snippet">${r.snippet}</div>
+                </div>
+            `).join('');
+        }
+
+        dropdown.classList.remove('hidden');
+    }
+
+    function openCaseFromSearch(caseId) {
+        document.getElementById('global-search').value = '';
+        const dropdown = document.getElementById('search-dropdown');
+        dropdown.innerHTML = '';
+        dropdown.classList.add('hidden');
+        navigate('case-detail', caseId);
+    }
+
+    document.addEventListener('click', function(e) {
+        const container = document.querySelector('.search-container');
+        if (container && !container.contains(e.target)) {
+            document.getElementById('search-dropdown').classList.add('hidden');
+        }
+    });
+
+    // --- CALENDAR GRID VIEW ---
+    function prevMonth() { currentCalDate.setMonth(currentCalDate.getMonth() - 1); navigate('calendar'); }
+    function nextMonth() { currentCalDate.setMonth(currentCalDate.getMonth() + 1); navigate('calendar'); }
+    function todayMonth() { currentCalDate = new Date(); navigate('calendar'); }
+
+    function renderCalendar(container) {
+        const year = currentCalDate.getFullYear();
+        const month = currentCalDate.getMonth();
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        
+        let hearingsByDate = {};
+        db.cases.forEach(c => {
+            (c.hearings || []).forEach(h => {
+                if (!h.date) return;
+                const dateKey = h.date.split('T')[0];
+                if (!hearingsByDate[dateKey]) hearingsByDate[dateKey] = [];
+                hearingsByDate[dateKey].push({ ...h, caseId: c.id, caseTitle: c.title });
+            });
+        });
+
+        const firstDayIndex = new Date(year, month, 1).getDay();
+        const totalDays = new Date(year, month + 1, 0).getDate();
+        const prevMonthTotalDays = new Date(year, month, 0).getDate();
+
+        let html = `
+            <div class="cal-header">
+                <div>
+                    <button class="btn btn-secondary btn-small" onclick="prevMonth()">&lt;</button>
+                    <button class="btn btn-secondary btn-small" onclick="nextMonth()">&gt;</button>
+                    <button class="btn btn-primary btn-small" onclick="todayMonth()">Today</button>
+                </div>
+                <h2 style="margin:0; font-size:1.05rem; text-align:center; color:var(--primary); font-weight:700;">${monthNames[month]} ${year}</h2>
+            </div>
+            
+            <div class="cal-grid-wrapper">
+                <div class="cal-grid-header">
+                    <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                </div>
+                <div class="cal-grid-body">
+        `;
+
+        for (let i = firstDayIndex - 1; i >= 0; i--) {
+            html += `<div class="cal-day other-month"><div class="day-number">${prevMonthTotalDays - i}</div></div>`;
+        }
+
+        const todayStr = new Date().toISOString().split('T')[0];
+
+        for (let day = 1; day <= totalDays; day++) {
+            const monthStr = String(month + 1).padStart(2, '0');
+            const dayStr = String(day).padStart(2, '0');
+            const dateKey = `${year}-${monthStr}-${dayStr}`;
+            const isToday = dateKey === todayStr;
+            const dayHearings = hearingsByDate[dateKey] || [];
+            
+            dayHearings.sort((a,b) => (a.date > b.date ? 1 : -1));
+
+            html += `
+                <div class="cal-day ${isToday ? 'today' : ''}">
+                    <div class="day-number">${day}</div>
+                    <div class="day-events">
+            `;
+
+            dayHearings.forEach(h => {
+                const timeStr = formatTimeOnly(h.date);
+                const isDone = h.status === 'done';
+                html += `
+                    <div class="event-pill ${isDone ? 'done' : ''}" onclick="navigate('case-detail', '${h.caseId}')">
+                        <span class="event-time">${timeStr || 'All Day'}</span>
+                        <span class="event-title">${h.caseTitle}: ${h.title}</span>
+                    </div>
+                `;
+            });
+
+            html += `</div></div>`;
+        }
+
+        const totalCellsSoFar = firstDayIndex + totalDays;
+        const trailingCells = (7 - (totalCellsSoFar % 7)) % 7;
+        for (let i = 1; i <= trailingCells; i++) {
+            html += `<div class="cal-day other-month"><div class="day-number">${i}</div></div>`;
+        }
+
+        html += `</div></div>`;
+        container.innerHTML = html;
+    }
+
+    // --- VIEWS ---
+    function navigate(view, caseId = null) {
+        if (view !== 'case-detail') {
+            editingHearingId = null;
+            editingTitleCaseId = null;
+        }
+        if (view !== 'cases') {
+            isAddingCase = false;
+        }
+        const app = document.getElementById('app-content');
+        app.innerHTML = '';
+        if (view === 'cases') renderCases(app);
+        if (view === 'case-detail') renderCaseDetail(app, caseId);
+        if (view === 'calendar') renderCalendar(app);
+    }
+
+    function renderCases(container) {
+        let html = `
+            <div class="flex-between" style="margin-bottom: 12px;">
+                <h2 style="margin:0; font-size:1.2rem; font-weight:700;">All Cases</h2>
+                ${!isAddingCase ? '<button class="btn btn-primary" onclick="showAddCaseForm()">+ New Case</button>' : ''}
+            </div>
+        `;
+
+        if (isAddingCase) {
+            html += `
+                <div class="card" style="margin-bottom: 12px; background: #e5f2ff;">
+                    <label style="font-weight:700; font-size:0.85rem; color:var(--primary); display:block; margin-bottom:4px;">Enter New Case Title:</label>
+                    <input type="text" id="new-case-title-input" placeholder="e.g., Smith vs. Johnson" style="margin-bottom:8px;">
+                    <div style="display:flex; gap:6px; justify-content:flex-end;">
+                        <button class="btn btn-success btn-small" onclick="saveNewCaseInline()">Save Case</button>
+                        <button class="btn btn-secondary btn-small" onclick="cancelAddCase()">Cancel</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        if (db.cases.length === 0 && !isAddingCase) {
+            html += `<p style="color:#8e8e93; text-align:center;">No cases found. Tap "+ New Case".</p>`;
+        } else {
+            db.cases.forEach(c => {
+                const pending = (c.hearings || []).filter(h => h.status !== 'done').length;
+                html += `
+                    <div class="card flex-between">
+                        <div>
+                            <strong style="font-size:1rem; color:var(--primary);">${c.title}</strong>
+                            <div style="font-size:0.8rem; color:#8e8e93;">${pending} pending hearing(s)</div>
+                        </div>
+                        <div style="display:flex; gap:6px;">
+                            <button class="btn btn-primary" onclick="navigate('case-detail', '${c.id}')">Open</button>
+                            <button class="btn btn-danger" onclick="deleteCase('${c.id}')">Del</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        container.innerHTML = html;
+    }
+
+    function renderCaseDetail(container, caseId) {
+        const c = db.cases.find(x => x.id === caseId);
+        if (!c) return navigate('cases');
+
+        let titleHtml = '';
+        if (editingTitleCaseId === c.id) {
+            titleHtml = `
+                <div style="display:flex; gap:6px; width:100%; align-items:center; margin-bottom:10px;">
+                    <input type="text" id="edit-case-title-input" value="${c.title}" style="margin:0; font-weight:bold; font-size:1.05rem; flex:1;">
+                    <button class="btn btn-success btn-small" onclick="saveCaseTitleInline('${c.id}')">Save</button>
+                    <button class="btn btn-secondary btn-small" onclick="cancelCaseTitleEdit('${c.id}')">Cancel</button>
+                </div>
+            `;
+        } else {
+            titleHtml = `
+                <div class="flex-between" style="align-items: flex-start; gap: 8px; margin-bottom: 8px;">
+                    <h2 style="margin:0; font-size:1.2rem; flex: 1; font-weight:700;">Case: ${c.title}</h2>
+                    <button class="btn btn-secondary btn-small" onclick="startEditCaseTitle('${c.id}')">✏️ Rename</button>
+                </div>
+            `;
+        }
+
+        let hearingsList = (c.hearings || [])
+            .sort((a, b) => new Date(a.date) - new Date(b.date))
+            .map(h => {
+                if (h.id === editingHearingId) {
+                    return `
+                        <div class="hearing-item" style="flex-direction: column; align-items: stretch; gap: 6px; background: #e5f2ff; padding: 10px; border-radius: 8px; margin-bottom: 8px;">
+                            <label style="font-size:0.75rem; font-weight:700; color:var(--primary);">Edit Date & Time:</label>
+                            <input type="datetime-local" id="edit-h-date-${h.id}" value="${h.date}">
+                            <label style="font-size:0.75rem; font-weight:700; color:var(--primary);">Edit Summary:</label>
+                            <input type="text" id="edit-h-title-${h.id}" value="${h.title}">
+                            <div style="display:flex; gap:6px; justify-content:flex-end; margin-top: 4px;">
+                                <button class="btn btn-success btn-small" onclick="saveHearingEdit('${caseId}', '${h.id}')">Save</button>
+                                <button class="btn btn-secondary btn-small" onclick="cancelEditHearing('${caseId}')">Cancel</button>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="hearing-item ${h.status === 'done' ? 'done' : ''}">
+                        <div>
+                            <strong style="font-size:0.88rem; color:var(--primary);">${formatDateTime(h.date)}</strong><br>
+                            <span style="font-size:0.85rem;">${h.title}</span>
+                        </div>
+                        <div style="display:flex; gap:4px; flex-wrap:wrap; justify-content:flex-end;">
+                            <button class="btn btn-secondary btn-small" onclick="startEditHearing('${caseId}', '${h.id}')">✏️</button>
+                            <button class="btn ${h.status === 'done' ? 'btn-secondary' : 'btn-success'} btn-small" 
+                                    onclick="toggleHearing('${caseId}', '${h.id}')">
+                                ${h.status === 'done' ? 'Undo' : 'Done'}
+                            </button>
+                            <button class="btn btn-danger btn-small" onclick="deleteHearing('${caseId}', '${h.id}')">✕</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+        container.innerHTML = `
+            <button class="btn btn-secondary" style="margin-bottom:12px;" onclick="navigate('cases')">&larr; Back</button>
+            <div class="card">
+                ${titleHtml}
+                <label style="font-weight:700; font-size:0.85rem; color:var(--primary);">Notes / Reference (Auto-saves):</label>
+                <textarea id="notes" placeholder="Type case notes..." oninput="saveNotes('${caseId}', this.value)">${c.notes || ''}</textarea>
+            </div>
+
+            <div class="card">
+                <h3 style="margin-top:0; font-size:1rem; font-weight:700;">Add Hearing</h3>
+                <label style="font-weight:700; font-size:0.8rem; color:var(--primary);">Date & Time (Hours & Minutes):</label>
+                <input type="datetime-local" id="h-date">
+                <input type="text" id="h-title" placeholder="Hearing summary...">
+                <button class="btn btn-primary" style="width:100%;" onclick="addHearing('${caseId}')">Add Hearing</button>
+                <div style="margin-top:12px;">${hearingsList || '<p style="font-size:0.85rem; color:#8e8e93;">No hearings scheduled.</p>'}</div>
+            </div>
+        `;
+    }
+
+    // --- INLINE CASE & TITLE MUTATIONS ---
+    function showAddCaseForm() {
+        isAddingCase = true;
+        navigate('cases');
+    }
+
+    function cancelAddCase() {
+        isAddingCase = false;
+        navigate('cases');
+    }
+
+    function saveNewCaseInline() {
+        const input = document.getElementById('new-case-title-input');
+        if (input && input.value.trim()) {
+            db.cases.push({ id: 'c_' + Date.now(), title: input.value.trim(), notes: '', hearings: [] });
+            isAddingCase = false;
+            autoSave();
+            navigate('cases');
+        }
+    }
+
+    function startEditCaseTitle(caseId) {
+        editingTitleCaseId = caseId;
+        navigate('case-detail', caseId);
+    }
+
+    function cancelCaseTitleEdit(caseId) {
+        editingTitleCaseId = null;
+        navigate('case-detail', caseId);
+    }
+
+    function saveCaseTitleInline(caseId) {
+        const input = document.getElementById('edit-case-title-input');
+        if (input && input.value.trim()) {
+            const c = db.cases.find(x => x.id === caseId);
+            if (c) {
+                c.title = input.value.trim();
+                editingTitleCaseId = null;
+                autoSave();
+                navigate('case-detail', caseId);
+            }
+        }
+    }
+
+    function startEditHearing(caseId, hId) {
+        editingHearingId = hId;
+        navigate('case-detail', caseId);
+    }
+
+    function cancelEditHearing(caseId) {
+        editingHearingId = null;
+        navigate('case-detail', caseId);
+    }
+
+    function saveHearingEdit(caseId, hId) {
+        const newDate = document.getElementById(`edit-h-date-${hId}`).value;
+        const newTitle = document.getElementById(`edit-h-title-${hId}`).value;
+
+        if (!newDate || !newTitle.trim()) return;
+
+        const c = db.cases.find(x => x.id === caseId);
+        const h = c.hearings.find(x => x.id === hId);
+        h.date = newDate;
+        h.title = newTitle.trim();
+
+        editingHearingId = null;
+        autoSave();
+        navigate('case-detail', caseId);
+    }
+
+    function deleteCase(id) {
+        if (confirm("Delete this case?")) {
+            db.cases = db.cases.filter(c => c.id !== id);
+            autoSave();
+            navigate('cases');
+        }
+    }
+
+    function saveNotes(caseId, val) {
+        const c = db.cases.find(x => x.id === caseId);
+        if (c) { c.notes = val; autoSave(); }
+    }
+
+    function addHearing(caseId) {
+        const d = document.getElementById('h-date').value;
+        const t = document.getElementById('h-title').value;
+        if (!d || !t) return;
+        
+        const c = db.cases.find(x => x.id === caseId);
+        if (!c.hearings) c.hearings = [];
+        c.hearings.push({ id: 'h_' + Date.now(), date: d, title: t, status: 'pending' });
+        autoSave();
+        navigate('case-detail', caseId);
+    }
+
+    function toggleHearing(caseId, hId) {
+        const c = db.cases.find(x => x.id === caseId);
+        const h = c.hearings.find(x => x.id === hId);
+        h.status = h.status === 'done' ? 'pending' : 'done';
+        autoSave();
+        navigate('case-detail', caseId);
+    }
+
+    function deleteHearing(caseId, hId) {
+        const c = db.cases.find(x => x.id === caseId);
+        c.hearings = c.hearings.filter(x => x.id !== hId);
+        autoSave();
+        navigate('case-detail', caseId);
+    }
+
+    // --- DATE/TIME HELPERS ---
+    function formatDateTime(str) {
+        if (!str) return '';
+        const d = new Date(str);
+        if (isNaN(d.getTime())) return str;
+        return d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) + 
+               ' at ' + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: true });
+    }
+
+    function formatTimeOnly(str) {
+        if (!str) return '';
+        const d = new Date(str);
+        if (isNaN(d.getTime())) return '';
+        return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: true });
+    }
+
+    // Boot App
+    loadFromPrivateRepo();
+</script>
+
+</body>
+</html>
