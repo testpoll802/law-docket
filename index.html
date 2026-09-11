@@ -5,21 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Law Case Manager</title>
+    <title>Law Docket Manager</title>
+    <!-- Soothing Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #f2f2f7;
+            --bg: #f2f4f2;
             --card-bg: #ffffff;
-            --primary: #1c3d5a;
-            --accent: #007aff;
-            --success: #34c759;
-            --danger: #ff3b30;
-            --text: #1c1c1e;
-            --border: #c6c6c8;
+            --primary: #2d4031;        /* Serene Deep Sage */
+            --accent: #4a7856;         /* Soothing Eucalyptus */
+            --accent-soft: #eaf1ec;    /* Muted Sage Tint */
+            --success: #4d8259;        /* Earthy Muted Green */
+            --danger: #c05c56;         /* Soft Terracotta Red */
+            --warning: #d4953a;        /* Warm Muted Amber */
+            --text: #232b25;           /* Dark Slate Charcoal */
+            --border: #dbe2dd;         /* Soft Edge Gray-Green */
+            --subtext: #6c7870;        /* Softer Gray-Green */
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "SF Pro Text", Roboto, sans-serif;
             background-color: var(--bg);
             color: var(--text);
             margin: 0;
@@ -29,140 +36,201 @@
 
         header {
             background-color: var(--primary);
-            color: white;
-            padding: calc(env(safe-area-inset-top) + 12px) 16px 12px 16px;
+            color: #ffffff;
+            padding: calc(env(safe-area-inset-top) + 14px) 16px 14px 16px;
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
 
-        header h1 { margin: 0 0 8px 0; font-size: 1.25rem; text-align: center; font-weight: 700; }
+        header h1 { 
+            margin: 0 0 10px 0; 
+            font-size: 1.25rem; 
+            text-align: center; 
+            font-weight: 700; 
+            letter-spacing: -0.01em;
+        }
 
         .status-banner {
             background: var(--accent);
-            color: white;
+            color: #ffffff;
             font-size: 0.78rem;
             text-align: center;
-            padding: 6px;
+            padding: 7px;
             font-weight: 500;
+            letter-spacing: 0.01em;
         }
 
-        .nav-bar { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-top: 6px; }
+        .nav-bar { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 6px; }
 
         .nav-bar button {
-            background-color: rgba(255, 255, 255, 0.2);
-            color: white;
+            background-color: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
             border: none;
-            padding: 8px 10px;
-            border-radius: 8px;
+            padding: 8px 12px;
+            border-radius: 10px;
             font-size: 0.82rem;
             font-weight: 600;
             cursor: pointer;
             flex: 1;
-            min-width: 65px;
-            max-width: 110px;
+            min-width: 60px;
+            max-width: 95px;
             backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
         }
 
-        .nav-bar button:active { opacity: 0.7; }
+        .nav-bar button.active {
+            background-color: #ffffff;
+            color: var(--primary);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
 
-        main { padding: 12px; max-width: 600px; margin: 0 auto; }
+        .nav-bar button:active { opacity: 0.8; }
 
-        .search-container { position: relative; margin-bottom: 12px; }
+        main { padding: 14px; max-width: 650px; margin: 0 auto; }
+
+        .search-container { position: relative; margin-bottom: 14px; }
         .search-input {
-            width: 100%; padding: 12px 14px; border-radius: 10px;
-            border: 1px solid #d1d1d6; font-size: 0.95rem;
+            width: 100%; padding: 12px 16px; border-radius: 12px;
+            border: 1px solid var(--border); font-size: 0.92rem;
             box-sizing: border-box; background: white; outline: none;
-            -webkit-appearance: none;
+            color: var(--text);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            font-family: inherit;
         }
-        .search-input:focus { border-color: var(--accent); }
+        .search-input:focus { border-color: var(--accent); background: #ffffff; }
         .search-dropdown {
             position: absolute; top: 100%; left: 0; right: 0;
             background: white; border: 1px solid var(--border);
-            border-radius: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-            z-index: 1000; max-height: 280px; overflow-y: auto; margin-top: 4px;
+            border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            z-index: 1000; max-height: 280px; overflow-y: auto; margin-top: 6px;
         }
-        .search-result-item { padding: 12px; border-bottom: 1px solid #e5e5ea; cursor: pointer; }
+        .search-result-item { padding: 12px 14px; border-bottom: 1px solid #edf1ee; cursor: pointer; }
         .search-result-item:last-child { border-bottom: none; }
-        .search-result-item:active { background-color: #e5e5ea; }
+        .search-result-item:active { background-color: var(--accent-soft); }
         .match-tag {
-            display: inline-block; font-size: 0.7rem; background-color: #e5e5ea;
-            color: #48484a; padding: 2px 6px; border-radius: 4px; font-weight: 600; margin-bottom: 3px;
+            display: inline-block; font-size: 0.68rem; background-color: var(--accent-soft);
+            color: var(--accent); padding: 3px 8px; border-radius: 6px; font-weight: 600; margin-bottom: 4px;
         }
-        .match-tag.hearing-tag { background-color: #ffe58f; color: #873800; }
-        .match-snippet { font-size: 0.85rem; color: #48484a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .match-tag.hearing-tag { background-color: #fdf3e3; color: #8c611f; }
+        .match-tag.archived-tag { background-color: #e8ebe8; color: var(--subtext); }
+        .match-snippet { font-size: 0.84rem; color: var(--subtext); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         .card {
-            background: var(--card-bg); border-radius: 12px;
-            padding: 16px; margin-bottom: 12px;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            background: var(--card-bg); border-radius: 16px;
+            padding: 16px 18px; margin-bottom: 14px;
+            border: 1px solid var(--border);
+            box-shadow: 0 3px 10px rgba(45, 64, 49, 0.03);
+        }
+
+        .card.case-card {
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .card.case-card:active {
+            transform: scale(0.99);
+            background-color: #fafcfb;
+        }
+
+        .card.archived {
+            background: #f7f9f7;
+            border: 1px dashed var(--border);
+            opacity: 0.8;
         }
 
         .flex-between { display: flex; justify-content: space-between; align-items: center; }
 
-        input[type="text"], input[type="datetime-local"], textarea {
-            width: 100%; padding: 12px; margin-bottom: 10px;
-            border: 1px solid #d1d1d6; border-radius: 8px;
-            box-sizing: border-box; font-size: 0.95rem; background: #fafafa;
-            -webkit-appearance: none;
+        .badge {
+            font-size: 0.72rem; font-weight: 600; padding: 4px 10px; border-radius: 12px; display: inline-block;
+        }
+        .badge-active { background: var(--accent-soft); color: var(--accent); }
+        .badge-archived { background: #e8ebe8; color: var(--subtext); }
+        .badge-next { background: #fcf4e8; color: #8c611f; }
+
+        label.field-label {
+            font-weight: 600; font-size: 0.82rem; color: var(--primary); display: block; margin-bottom: 5px; margin-top: 10px;
         }
 
-        textarea { height: 120px; resize: vertical; }
+        input[type="text"], input[type="tel"], input[type="datetime-local"], textarea {
+            width: 100%; padding: 11px 14px; margin-bottom: 10px;
+            border: 1px solid var(--border); border-radius: 10px;
+            box-sizing: border-box; font-size: 0.92rem; background: #fafcfb;
+            color: var(--text); font-family: inherit; outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, textarea:focus {
+            border-color: var(--accent);
+            background: #ffffff;
+        }
+
+        textarea { height: 100px; resize: vertical; }
 
         .btn {
-            padding: 10px 14px; border: none; border-radius: 8px;
-            font-size: 0.88rem; font-weight: 600; color: white; cursor: pointer;
+            padding: 9px 14px; border: none; border-radius: 10px;
+            font-size: 0.84rem; font-weight: 600; color: white; cursor: pointer;
+            display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+            font-family: inherit; transition: opacity 0.15s ease;
         }
         .btn-primary { background-color: var(--accent); }
         .btn-danger { background-color: var(--danger); }
         .btn-success { background-color: var(--success); }
-        .btn-secondary { background-color: #8e8e93; }
-        .btn-small { padding: 6px 10px; font-size: 0.78rem; border-radius: 6px; }
+        .btn-secondary { background-color: #87948a; }
+        .btn-warning { background-color: var(--warning); color: #ffffff; }
+        .btn-small { padding: 6px 10px; font-size: 0.78rem; border-radius: 8px; }
+        .btn:active { opacity: 0.85; }
 
-        .hearing-item {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 12px 0; border-bottom: 1px solid #e5e5ea;
+        /* Hearings View Layout */
+        .day-group { margin-bottom: 18px; }
+        .day-group-header {
+            font-size: 0.92rem; font-weight: 700; color: var(--primary);
+            padding: 8px 12px; background: var(--accent-soft); border-radius: 10px;
+            margin-bottom: 8px; border-left: 4px solid var(--accent);
         }
-        .hearing-item:last-child { border-bottom: none; }
-        .hearing-item.done { text-decoration: line-through; opacity: 0.5; }
+        .hearing-card {
+            background: white; border-radius: 12px; padding: 12px 14px; margin-bottom: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02); cursor: pointer;
+            border: 1px solid var(--border); transition: transform 0.1s;
+        }
+        .hearing-card:active { transform: scale(0.99); background: #fafcfb; }
+        .hearing-card.done { opacity: 0.55; text-decoration: line-through; }
 
+        /* Calendar View */
         .cal-header {
             display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 8px; background: white; padding: 10px; border-radius: 10px;
+            margin-bottom: 10px; background: white; padding: 12px; border-radius: 12px;
+            border: 1px solid var(--border);
         }
         .cal-grid-wrapper {
-            background: white; border-radius: 10px; overflow-x: auto;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            background: white; border-radius: 14px; overflow-x: auto;
+            border: 1px solid var(--border);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.02); margin-bottom: 14px;
         }
         .cal-grid-header {
             display: grid; grid-template-columns: repeat(7, 1fr);
             background: var(--primary); color: white; text-align: center;
-            font-weight: 600; font-size: 0.75rem; padding: 8px 0; min-width: 480px;
+            font-weight: 600; font-size: 0.75rem; padding: 10px 0; min-width: 320px;
         }
         .cal-grid-body {
             display: grid; grid-template-columns: repeat(7, 1fr);
-            min-width: 480px; background: #e5e5ea; gap: 1px;
+            min-width: 320px; background: var(--border); gap: 1px;
         }
         .cal-day {
-            background: white; min-height: 80px; padding: 4px;
-            box-sizing: border-box; display: flex; flex-direction: column;
+            background: white; min-height: 65px; padding: 5px;
+            box-sizing: border-box; display: flex; flex-direction: column; cursor: pointer;
         }
-        .cal-day.other-month { background: #f2f2f7; opacity: 0.5; }
-        .cal-day.today { background: #e5f2ff; }
+        .cal-day.other-month { background: #f8faf8; opacity: 0.45; }
+        .cal-day.today { background: var(--accent-soft); }
+        .cal-day.selected-day { border: 2px solid var(--accent); background: #fcf8f2; }
         .cal-day.today .day-number {
             background: var(--accent); color: white; border-radius: 50%;
-            width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center;
+            width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center;
         }
-        .day-number { font-size: 0.75rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
-        .day-events { display: flex; flex-direction: column; gap: 3px; overflow-y: auto; max-height: 60px; }
-        .event-pill {
-            background: #e5f2ff; border-left: 3px solid var(--accent);
-            padding: 3px 4px; border-radius: 4px; font-size: 0.68rem; cursor: pointer; line-height: 1.2;
-        }
-        .event-pill.done { opacity: 0.5; text-decoration: line-through; border-left-color: var(--success); }
-        .event-time { font-weight: 700; color: var(--primary); font-size: 0.62rem; display: block; }
-        .event-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        .day-number { font-size: 0.75rem; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+        .day-events-dots { display: flex; gap: 3px; flex-wrap: wrap; margin-top: auto; }
+        .dot { width: 6px; height: 6px; border-radius: 50%; background-color: var(--accent); }
+        .dot.done { background-color: var(--success); }
 
         .hidden { display: none !important; }
     </style>
@@ -172,8 +240,9 @@
 <header>
     <h1>⚖️ Law Docket Manager</h1>
     <div class="nav-bar">
-        <button onclick="navigate('cases')">Cases</button>
-        <button onclick="navigate('calendar')">Calendar</button>
+        <button id="nav-cases" onclick="navigate('cases')">Cases</button>
+        <button id="nav-hearings" onclick="navigate('hearings')">Hearings</button>
+        <button id="nav-calendar" onclick="navigate('calendar')">Calendar</button>
         <button onclick="openSyncSettings()">⚙️ Sync</button>
         <button onclick="exportJSON()">Backup</button>
     </div>
@@ -186,7 +255,7 @@
 <main>
     <div class="search-container">
         <input type="text" class="search-input" id="global-search" 
-               placeholder="🔍 Search titles, notes, hearing summaries..." 
+               placeholder="🔍 Search cases, clients, notes, summaries (incl. archived)..." 
                oninput="handleGlobalSearch(this.value)">
         <div id="search-dropdown" class="search-dropdown hidden"></div>
     </div>
@@ -197,11 +266,57 @@
 <script>
     let db = { cases: [] };
     let currentCalDate = new Date();
-    let editingHearingId = null;
-    let editingTitleCaseId = null;
+    let selectedCalDateKey = new Date().toISOString().split('T')[0];
+    let currentView = 'cases';
+    let showArchivedCases = false;
     let isAddingCase = false;
+    let editingHearingId = null;
     let fileSha = null;
     let debounceTimer = null;
+
+    // --- HELPER FUNCTIONS ---
+    function getOrdinalNum(n) {
+        return n + (["st","nd","rd"][((n+90)%100-10)%10] || "th");
+    }
+
+    function formatHeaderDateStr(dateKey) {
+        const parts = dateKey.split('-');
+        if (parts.length !== 3) return dateKey;
+        const y = parseInt(parts[0]), m = parseInt(parts[1]) - 1, d = parseInt(parts[2]);
+        const dateObj = new Date(y, m, d);
+        if (isNaN(dateObj.getTime())) return dateKey;
+
+        const todayStr = new Date().toISOString().split('T')[0];
+        const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+        const monthName = dateObj.toLocaleDateString('en-US', { month: 'short' });
+        const ordinalDay = getOrdinalNum(d);
+
+        let prefix = dateKey === todayStr ? 'Today — ' : '';
+        return `${prefix}${ordinalDay} ${monthName} (${dayName}), ${y}`;
+    }
+
+    function formatDateTime(str) {
+        if (!str) return '';
+        const d = new Date(str);
+        if (isNaN(d.getTime())) return str;
+        return d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) + 
+               ' at ' + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: true });
+    }
+
+    function formatTimeOnly(str) {
+        if (!str) return '';
+        const d = new Date(str);
+        if (isNaN(d.getTime())) return '';
+        return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: true });
+    }
+
+    function getNextHearingDate(c) {
+        if (!c.hearings || c.hearings.length === 0) return null;
+        const pending = c.hearings
+            .filter(h => h.status !== 'done' && h.date)
+            .sort((a,b) => a.date.localeCompare(b.date));
+        return pending.length > 0 ? pending[0].date : null;
+    }
 
     // --- PRIVATE REPOSITORY SYNC ENGINE ---
     function getGHConfig() {
@@ -239,9 +354,10 @@
                 fileSha = data.sha;
                 const decodedText = decodeURIComponent(escape(atob(data.content.replace(/\n/g, ''))));
                 db = JSON.parse(decodedText);
+                sanitizeDB();
                 localStorage.setItem('law_db_auto', JSON.stringify(db));
                 setStatus('Synced & Secured via Private GitHub');
-                navigate('cases');
+                navigate(currentView);
             } else if (res.status === 404) {
                 setStatus('Private file initialized. Adding your first case will save it remotely.');
                 loadFromLocalStorage();
@@ -300,11 +416,23 @@
 
     function autoSave() {
         localStorage.setItem('law_db_auto', JSON.stringify(db));
-        setStatus('Typing... (saving in 1.5s)');
+        setStatus('Saving...');
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => {
             syncToPrivateRepo();
         }, 1500);
+    }
+
+    function sanitizeDB() {
+        if (!db.cases) db.cases = [];
+        db.cases.forEach(c => {
+            c.clientName = c.clientName || '';
+            c.clientPhone = c.clientPhone || '';
+            c.summary = c.summary || '';
+            c.notes = c.notes || '';
+            c.archived = !!c.archived;
+            c.hearings = c.hearings || [];
+        });
     }
 
     function loadFromLocalStorage() {
@@ -312,7 +440,8 @@
         if (localData) {
             try { db = JSON.parse(localData); } catch(e){}
         }
-        navigate('cases');
+        sanitizeDB();
+        navigate(currentView);
     }
 
     function openSyncSettings() {
@@ -333,28 +462,66 @@
         loadFromPrivateRepo();
     }
 
-    // --- MANUAL BACKUP ---
     async function exportJSON() {
+    try {
         const jsonStr = JSON.stringify(db, null, 2);
         const blob = new Blob([jsonStr], { type: 'application/json' });
-        const file = new File([blob], 'law_docket_data.json', { type: 'application/json' });
+        const fileName = `law_docket_backup_${new Date().toISOString().split('T')[0]}.json`;
+        const file = new File([blob], fileName, { type: 'application/json' });
 
+        // 1. Try Native Mobile Web Share API (iPhone / Android)
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
             try {
-                await navigator.share({ files: [file], title: 'law_docket_data.json' });
+                await navigator.share({
+                    files: [file],
+                    title: 'Law Docket Backup',
+                    text: 'Law Docket Data Backup JSON'
+                });
                 return;
-            } catch (err) { if (err.name === 'AbortError') return; }
+            } catch (shareErr) {
+                if (shareErr.name === 'AbortError') return; // User tapped 'Cancel'
+            }
         }
 
+        // 2. Fallback Direct Download (Desktop & WebKit Browsers)
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'law_docket_data.json';
+        a.download = fileName;
+        document.body.appendChild(a);
         a.click();
-        URL.revokeObjectURL(url);
+        
+        // Cleanup after delay so Safari has time to initiate download
+        setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }, 2000);
+
+    } catch (err) {
+        alert('Backup error: ' + err.message);
+    }
+}
+
+    // --- NAVIGATION ---
+    function navigate(view, caseId = null) {
+        currentView = view;
+        ['cases', 'hearings', 'calendar'].forEach(v => {
+            const btn = document.getElementById(`nav-${v}`);
+            if (btn) btn.classList.toggle('active', v === view);
+        });
+
+        if (view !== 'case-detail') editingHearingId = null;
+        if (view !== 'cases') isAddingCase = false;
+
+        const app = document.getElementById('app-content');
+        app.innerHTML = '';
+        if (view === 'cases') renderCasesView(app);
+        if (view === 'hearings') renderHearingsView(app);
+        if (view === 'calendar') renderCalendarView(app);
+        if (view === 'case-detail') renderCaseDetailView(app, caseId);
     }
 
-    // --- SEARCH LOGIC ---
+    // --- SEARCH (SEARCHES ALL CASES INCLUDING ARCHIVED) ---
     function handleGlobalSearch(query) {
         const dropdown = document.getElementById('search-dropdown');
         const term = query.trim().toLowerCase();
@@ -366,53 +533,46 @@
         }
 
         let results = [];
-
         db.cases.forEach(c => {
+            const isArchived = c.archived;
+            const archiveTag = isArchived ? ' (Archived)' : '';
+
             if (c.title && c.title.toLowerCase().includes(term)) {
-                results.push({ caseId: c.id, caseTitle: c.title, tag: 'Case Title', isHearing: false, snippet: c.title });
+                results.push({ caseId: c.id, tag: `Case Title${archiveTag}`, isArchived, snippet: c.title });
+            } else if (c.clientName && c.clientName.toLowerCase().includes(term)) {
+                results.push({ caseId: c.id, tag: `Client Name${archiveTag}`, isArchived, snippet: `Client: ${c.clientName} (${c.title})` });
+            } else if (c.summary && c.summary.toLowerCase().includes(term)) {
+                results.push({ caseId: c.id, tag: `Case Summary${archiveTag}`, isArchived, snippet: c.summary });
+            } else if (c.notes && c.notes.toLowerCase().includes(term)) {
+                results.push({ caseId: c.id, tag: `Notes${archiveTag}`, isArchived, snippet: c.notes });
             }
 
-            if (c.notes && c.notes.toLowerCase().includes(term)) {
-                const idx = c.notes.toLowerCase().indexOf(term);
-                const start = Math.max(0, idx - 15);
-                const end = Math.min(c.notes.length, idx + term.length + 25);
-                const snippetText = (start > 0 ? '...' : '') + c.notes.substring(start, end) + (end < c.notes.length ? '...' : '');
-
-                results.push({ caseId: c.id, caseTitle: c.title, tag: 'Notes', isHearing: false, snippet: snippetText });
-            }
-
-            if (c.hearings && c.hearings.length > 0) {
-                c.hearings.forEach(h => {
-                    if (h.title && h.title.toLowerCase().includes(term)) {
-                        results.push({
-                            caseId: c.id, caseTitle: c.title, tag: 'Hearing Summary', isHearing: true,
-                            snippet: `📅 ${formatDateTime(h.date)} — ${h.title}`
-                        });
-                    }
-                });
-            }
+            (c.hearings || []).forEach(h => {
+                if (h.title && h.title.toLowerCase().includes(term)) {
+                    results.push({
+                        caseId: c.id, tag: `Hearing${archiveTag}`, isHearing: true, isArchived,
+                        snippet: `${c.title}: ${h.title} (${formatDateTime(h.date)})`
+                    });
+                }
+            });
         });
 
         if (results.length === 0) {
-            dropdown.innerHTML = `<div style="padding:12px; color:#8e8e93; font-size:0.85rem; text-align:center;">No matching records found</div>`;
+            dropdown.innerHTML = `<div style="padding:12px; color:var(--subtext); font-size:0.85rem; text-align:center;">No matching records found</div>`;
         } else {
             dropdown.innerHTML = results.map(r => `
                 <div class="search-result-item" onclick="openCaseFromSearch('${r.caseId}')">
-                    <div style="font-weight:700; font-size:0.95rem; color:var(--primary);">${r.caseTitle}</div>
-                    <span class="match-tag ${r.isHearing ? 'hearing-tag' : ''}">${r.tag}</span>
+                    <span class="match-tag ${r.isHearing ? 'hearing-tag' : ''} ${r.isArchived ? 'archived-tag' : ''}">${r.tag}</span>
                     <div class="match-snippet">${r.snippet}</div>
                 </div>
             `).join('');
         }
-
         dropdown.classList.remove('hidden');
     }
 
     function openCaseFromSearch(caseId) {
         document.getElementById('global-search').value = '';
-        const dropdown = document.getElementById('search-dropdown');
-        dropdown.innerHTML = '';
-        dropdown.classList.add('hidden');
+        document.getElementById('search-dropdown').classList.add('hidden');
         navigate('case-detail', caseId);
     }
 
@@ -423,29 +583,226 @@
         }
     });
 
-    // --- CALENDAR GRID VIEW ---
-    function prevMonth() { currentCalDate.setMonth(currentCalDate.getMonth() - 1); navigate('calendar'); }
-    function nextMonth() { currentCalDate.setMonth(currentCalDate.getMonth() + 1); navigate('calendar'); }
-    function todayMonth() { currentCalDate = new Date(); navigate('calendar'); }
+    // --- VIEW 1: CASE VIEW ---
+    function toggleShowArchived() {
+        showArchivedCases = !showArchivedCases;
+        navigate('cases');
+    }
 
-    function renderCalendar(container) {
-        const year = currentCalDate.getFullYear();
-        const month = currentCalDate.getMonth();
-        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-        
+    function renderCasesView(container) {
+        const filteredCases = db.cases.filter(c => showArchivedCases ? true : !c.archived);
+        const archivedCount = db.cases.filter(c => c.archived).length;
+
+        let html = `
+            <div class="flex-between" style="margin-bottom: 12px;">
+                <h2 style="margin:0; font-size:1.15rem; font-weight:700;">Cases (${filteredCases.length})</h2>
+                <div style="display:flex; gap:6px;">
+                    <button class="btn btn-secondary btn-small" onclick="toggleShowArchived()">
+                        ${showArchivedCases ? 'Hide Archived' : `Show Archived (${archivedCount})`}
+                    </button>
+                    ${!isAddingCase ? '<button class="btn btn-primary btn-small" onclick="showAddCaseForm()">+ New Case</button>' : ''}
+                </div>
+            </div>
+        `;
+
+        if (isAddingCase) {
+            html += `
+                <div class="card" style="background: var(--accent-soft); margin-bottom: 12px;">
+                    <h3 style="margin-top:0; font-size:1rem; font-weight:700; color:var(--primary);">Add New Case</h3>
+                    
+                    <label class="field-label">Case Title / Number *</label>
+                    <input type="text" id="new-title" placeholder="e.g., Sharma vs. State of Delhi">
+
+                    <label class="field-label">Client Name</label>
+                    <input type="text" id="new-client-name" placeholder="Client Name">
+
+                    <label class="field-label">Client Mobile Number</label>
+                    <input type="tel" id="new-client-phone" placeholder="e.g. +91 9876543210">
+
+                    <label class="field-label">Case Summary</label>
+                    <input type="text" id="new-summary" placeholder="Brief case overview...">
+
+                    <div style="display:flex; gap:6px; justify-content:flex-end; margin-top:8px;">
+                        <button class="btn btn-success btn-small" onclick="saveNewCase()">Save Case</button>
+                        <button class="btn btn-secondary btn-small" onclick="cancelAddCase()">Cancel</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        if (filteredCases.length === 0 && !isAddingCase) {
+            html += `<p style="color:var(--subtext); text-align:center; padding: 24px;">No cases found. Tap "+ New Case" to create one.</p>`;
+        } else {
+            filteredCases.forEach(c => {
+                const nextDate = getNextHearingDate(c);
+                const pendingCount = (c.hearings || []).filter(h => h.status !== 'done').length;
+
+                html += `
+                    <div class="card case-card ${c.archived ? 'archived' : ''}" onclick="navigate('case-detail', '${c.id}')">
+                        <div class="flex-between" style="margin-bottom:6px;">
+                            <strong style="font-size:1.02rem; color:var(--primary);">${c.title}</strong>
+                            <span class="badge ${c.archived ? 'badge-archived' : 'badge-active'}">
+                                ${c.archived ? 'Archived' : 'Active'}
+                            </span>
+                        </div>
+
+                        ${c.clientName ? `<div style="font-size:0.85rem; font-weight:600; color:var(--text); margin-top:3px;">👤 Client: ${c.clientName} ${c.clientPhone ? `(${c.clientPhone})` : ''}</div>` : ''}
+                        ${c.summary ? `<div style="font-size:0.82rem; color:var(--subtext); margin-top:3px;">📝 ${c.summary}</div>` : ''}
+                        
+                        <div style="margin-top:10px; font-size:0.8rem; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                            ${nextDate ? `<span class="badge badge-next">Next Hearing: ${formatDateTime(nextDate)}</span>` : `<span style="color:var(--subtext);">No upcoming hearings</span>`}
+                            <span style="color:var(--subtext);">(${pendingCount} pending)</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        container.innerHTML = html;
+    }
+
+    function showAddCaseForm() { isAddingCase = true; renderCasesView(document.getElementById('app-content')); }
+    function cancelAddCase() { isAddingCase = false; renderCasesView(document.getElementById('app-content')); }
+
+    function saveNewCase() {
+        const title = document.getElementById('new-title').value.trim();
+        if (!title) return alert("Please enter a Case Title");
+
+        const clientName = document.getElementById('new-client-name').value.trim();
+        const clientPhone = document.getElementById('new-client-phone').value.trim();
+        const summary = document.getElementById('new-summary').value.trim();
+
+        db.cases.push({
+            id: 'c_' + Date.now(),
+            title: title,
+            clientName: clientName,
+            clientPhone: clientPhone,
+            summary: summary,
+            notes: '',
+            archived: false,
+            hearings: []
+        });
+
+        isAddingCase = false;
+        autoSave();
+        navigate('cases');
+    }
+
+    function toggleArchiveCase(caseId) {
+        const c = db.cases.find(x => x.id === caseId);
+        if (c) {
+            c.archived = !c.archived;
+            autoSave();
+            if (currentView === 'case-detail') {
+                navigate('case-detail', caseId);
+            } else {
+                navigate('cases');
+            }
+        }
+    }
+
+    function deleteCase(id) {
+        if (confirm("Are you sure you want to delete this case and all its records?")) {
+            db.cases = db.cases.filter(c => c.id !== id);
+            autoSave();
+            navigate('cases');
+        }
+    }
+
+    // --- VIEW 2: HEARINGS VIEW ---
+    function renderHearingsView(container) {
         let hearingsByDate = {};
+
         db.cases.forEach(c => {
+            if (c.archived) return;
             (c.hearings || []).forEach(h => {
                 if (!h.date) return;
                 const dateKey = h.date.split('T')[0];
                 if (!hearingsByDate[dateKey]) hearingsByDate[dateKey] = [];
-                hearingsByDate[dateKey].push({ ...h, caseId: c.id, caseTitle: c.title });
+                hearingsByDate[dateKey].push({
+                    ...h,
+                    caseId: c.id,
+                    caseTitle: c.title,
+                    clientName: c.clientName
+                });
+            });
+        });
+
+        const sortedDateKeys = Object.keys(hearingsByDate).sort();
+
+        let html = `
+            <div class="flex-between" style="margin-bottom: 12px;">
+                <h2 style="margin:0; font-size:1.15rem; font-weight:700;">All Scheduled Hearings</h2>
+            </div>
+        `;
+
+        if (sortedDateKeys.length === 0) {
+            html += `<p style="color:var(--subtext); text-align:center; padding:24px;">No hearings scheduled.</p>`;
+        } else {
+            sortedDateKeys.forEach(dateKey => {
+                const dayHearings = hearingsByDate[dateKey];
+                dayHearings.sort((a,b) => a.date.localeCompare(b.date));
+
+                html += `
+                    <div class="day-group">
+                        <div class="day-group-header">${formatHeaderDateStr(dateKey)}</div>
+                `;
+
+                dayHearings.forEach(h => {
+                    const isDone = h.status === 'done';
+                    html += `
+                        <div class="hearing-card ${isDone ? 'done' : ''}" onclick="navigate('case-detail', '${h.caseId}')">
+                            <div class="flex-between">
+                                <strong style="font-size:0.95rem; color:var(--primary);">${h.caseTitle}</strong>
+                                <span style="font-size:0.8rem; font-weight:700; color:var(--accent);">${formatTimeOnly(h.date) || 'All Day'}</span>
+                            </div>
+                            <div style="font-size:0.85rem; margin-top:3px; color:var(--text);">${h.title}</div>
+                            ${h.clientName ? `<div style="font-size:0.78rem; color:var(--subtext); margin-top:2px;">Client: ${h.clientName}</div>` : ''}
+                        </div>
+                    `;
+                });
+
+                html += `</div>`;
+            });
+        }
+
+        container.innerHTML = html;
+    }
+
+    // --- VIEW 3: CALENDAR VIEW ---
+    function prevMonth() { currentCalDate.setMonth(currentCalDate.getMonth() - 1); navigate('calendar'); }
+    function nextMonth() { currentCalDate.setMonth(currentCalDate.getMonth() + 1); navigate('calendar'); }
+    function todayMonth() { 
+        currentCalDate = new Date(); 
+        selectedCalDateKey = new Date().toISOString().split('T')[0];
+        navigate('calendar'); 
+    }
+
+    function selectCalDate(dateKey) {
+        selectedCalDateKey = dateKey;
+        renderCalendarView(document.getElementById('app-content'));
+    }
+
+    function renderCalendarView(container) {
+        const year = currentCalDate.getFullYear();
+        const month = currentCalDate.getMonth();
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+        let hearingsByDate = {};
+        db.cases.forEach(c => {
+            if (c.archived) return;
+            (c.hearings || []).forEach(h => {
+                if (!h.date) return;
+                const dateKey = h.date.split('T')[0];
+                if (!hearingsByDate[dateKey]) hearingsByDate[dateKey] = [];
+                hearingsByDate[dateKey].push({ ...h, caseId: c.id, caseTitle: c.title, clientName: c.clientName });
             });
         });
 
         const firstDayIndex = new Date(year, month, 1).getDay();
         const totalDays = new Date(year, month + 1, 0).getDate();
         const prevMonthTotalDays = new Date(year, month, 0).getDate();
+        const todayStr = new Date().toISOString().split('T')[0];
 
         let html = `
             <div class="cal-header">
@@ -454,7 +811,7 @@
                     <button class="btn btn-secondary btn-small" onclick="nextMonth()">&gt;</button>
                     <button class="btn btn-primary btn-small" onclick="todayMonth()">Today</button>
                 </div>
-                <h2 style="margin:0; font-size:1.05rem; text-align:center; color:var(--primary); font-weight:700;">${monthNames[month]} ${year}</h2>
+                <h2 style="margin:0; font-size:1.02rem; text-align:center; color:var(--primary); font-weight:700;">${monthNames[month]} ${year}</h2>
             </div>
             
             <div class="cal-grid-wrapper">
@@ -468,35 +825,22 @@
             html += `<div class="cal-day other-month"><div class="day-number">${prevMonthTotalDays - i}</div></div>`;
         }
 
-        const todayStr = new Date().toISOString().split('T')[0];
-
         for (let day = 1; day <= totalDays; day++) {
             const monthStr = String(month + 1).padStart(2, '0');
             const dayStr = String(day).padStart(2, '0');
             const dateKey = `${year}-${monthStr}-${dayStr}`;
             const isToday = dateKey === todayStr;
+            const isSelected = dateKey === selectedCalDateKey;
             const dayHearings = hearingsByDate[dateKey] || [];
-            
-            dayHearings.sort((a,b) => (a.date > b.date ? 1 : -1));
 
             html += `
-                <div class="cal-day ${isToday ? 'today' : ''}">
+                <div class="cal-day ${isToday ? 'today' : ''} ${isSelected ? 'selected-day' : ''}" onclick="selectCalDate('${dateKey}')">
                     <div class="day-number">${day}</div>
-                    <div class="day-events">
-            `;
-
-            dayHearings.forEach(h => {
-                const timeStr = formatTimeOnly(h.date);
-                const isDone = h.status === 'done';
-                html += `
-                    <div class="event-pill ${isDone ? 'done' : ''}" onclick="navigate('case-detail', '${h.caseId}')">
-                        <span class="event-time">${timeStr || 'All Day'}</span>
-                        <span class="event-title">${h.caseTitle}: ${h.title}</span>
+                    <div class="day-events-dots">
+                        ${dayHearings.map(h => `<div class="dot ${h.status === 'done' ? 'done' : ''}"></div>`).join('')}
                     </div>
-                `;
-            });
-
-            html += `</div></div>`;
+                </div>
+            `;
         }
 
         const totalCellsSoFar = firstDayIndex + totalDays;
@@ -506,101 +850,54 @@
         }
 
         html += `</div></div>`;
-        container.innerHTML = html;
-    }
 
-    // --- VIEWS ---
-    function navigate(view, caseId = null) {
-        if (view !== 'case-detail') {
-            editingHearingId = null;
-            editingTitleCaseId = null;
-        }
-        if (view !== 'cases') {
-            isAddingCase = false;
-        }
-        const app = document.getElementById('app-content');
-        app.innerHTML = '';
-        if (view === 'cases') renderCases(app);
-        if (view === 'case-detail') renderCaseDetail(app, caseId);
-        if (view === 'calendar') renderCalendar(app);
-    }
+        const selectedHearings = hearingsByDate[selectedCalDateKey] || [];
+        selectedHearings.sort((a,b) => a.date.localeCompare(b.date));
 
-    function renderCases(container) {
-        let html = `
-            <div class="flex-between" style="margin-bottom: 12px;">
-                <h2 style="margin:0; font-size:1.2rem; font-weight:700;">All Cases</h2>
-                ${!isAddingCase ? '<button class="btn btn-primary" onclick="showAddCaseForm()">+ New Case</button>' : ''}
-            </div>
+        html += `
+            <div class="card" style="margin-top: 10px;">
+                <h3 style="margin-top:0; font-size:0.98rem; font-weight:700; color:var(--primary);">
+                    Hearings for ${formatHeaderDateStr(selectedCalDateKey)}
+                </h3>
         `;
 
-        if (isAddingCase) {
-            html += `
-                <div class="card" style="margin-bottom: 12px; background: #e5f2ff;">
-                    <label style="font-weight:700; font-size:0.85rem; color:var(--primary); display:block; margin-bottom:4px;">Enter New Case Title:</label>
-                    <input type="text" id="new-case-title-input" placeholder="e.g., Smith vs. Johnson" style="margin-bottom:8px;">
-                    <div style="display:flex; gap:6px; justify-content:flex-end;">
-                        <button class="btn btn-success btn-small" onclick="saveNewCaseInline()">Save Case</button>
-                        <button class="btn btn-secondary btn-small" onclick="cancelAddCase()">Cancel</button>
-                    </div>
-                </div>
-            `;
-        }
-
-        if (db.cases.length === 0 && !isAddingCase) {
-            html += `<p style="color:#8e8e93; text-align:center;">No cases found. Tap "+ New Case".</p>`;
+        if (selectedHearings.length === 0) {
+            html += `<p style="color:var(--subtext); font-size:0.85rem; margin:0;">No hearings scheduled for this day.</p>`;
         } else {
-            db.cases.forEach(c => {
-                const pending = (c.hearings || []).filter(h => h.status !== 'done').length;
+            selectedHearings.forEach(h => {
                 html += `
-                    <div class="card flex-between">
-                        <div>
-                            <strong style="font-size:1rem; color:var(--primary);">${c.title}</strong>
-                            <div style="font-size:0.8rem; color:#8e8e93;">${pending} pending hearing(s)</div>
+                    <div class="hearing-card ${h.status === 'done' ? 'done' : ''}" onclick="navigate('case-detail', '${h.caseId}')">
+                        <div class="flex-between">
+                            <strong style="font-size:0.95rem; color:var(--primary);">${h.caseTitle}</strong>
+                            <span style="font-size:0.8rem; font-weight:700; color:var(--accent);">${formatTimeOnly(h.date) || 'All Day'}</span>
                         </div>
-                        <div style="display:flex; gap:6px;">
-                            <button class="btn btn-primary" onclick="navigate('case-detail', '${c.id}')">Open</button>
-                            <button class="btn btn-danger" onclick="deleteCase('${c.id}')">Del</button>
-                        </div>
+                        <div style="font-size:0.85rem; margin-top:3px; color:var(--text);">${h.title}</div>
+                        ${h.clientName ? `<div style="font-size:0.78rem; color:var(--subtext); margin-top:2px;">Client: ${h.clientName}</div>` : ''}
                     </div>
                 `;
             });
         }
+
+        html += `</div>`;
         container.innerHTML = html;
     }
 
-    function renderCaseDetail(container, caseId) {
+    // --- VIEW 4: CASE DETAIL VIEW ---
+    function renderCaseDetailView(container, caseId) {
         const c = db.cases.find(x => x.id === caseId);
         if (!c) return navigate('cases');
-
-        let titleHtml = '';
-        if (editingTitleCaseId === c.id) {
-            titleHtml = `
-                <div style="display:flex; gap:6px; width:100%; align-items:center; margin-bottom:10px;">
-                    <input type="text" id="edit-case-title-input" value="${c.title}" style="margin:0; font-weight:bold; font-size:1.05rem; flex:1;">
-                    <button class="btn btn-success btn-small" onclick="saveCaseTitleInline('${c.id}')">Save</button>
-                    <button class="btn btn-secondary btn-small" onclick="cancelCaseTitleEdit('${c.id}')">Cancel</button>
-                </div>
-            `;
-        } else {
-            titleHtml = `
-                <div class="flex-between" style="align-items: flex-start; gap: 8px; margin-bottom: 8px;">
-                    <h2 style="margin:0; font-size:1.2rem; flex: 1; font-weight:700;">Case: ${c.title}</h2>
-                    <button class="btn btn-secondary btn-small" onclick="startEditCaseTitle('${c.id}')">✏️ Rename</button>
-                </div>
-            `;
-        }
 
         let hearingsList = (c.hearings || [])
             .sort((a, b) => new Date(a.date) - new Date(b.date))
             .map(h => {
                 if (h.id === editingHearingId) {
                     return `
-                        <div class="hearing-item" style="flex-direction: column; align-items: stretch; gap: 6px; background: #e5f2ff; padding: 10px; border-radius: 8px; margin-bottom: 8px;">
-                            <label style="font-size:0.75rem; font-weight:700; color:var(--primary);">Edit Date & Time:</label>
+                        <div class="hearing-item" style="background: var(--accent-soft); padding: 12px; border-radius: 10px; margin-bottom: 8px;">
+                            <label class="field-label">Edit Date & Time:</label>
                             <input type="datetime-local" id="edit-h-date-${h.id}" value="${h.date}">
-                            <label style="font-size:0.75rem; font-weight:700; color:var(--primary);">Edit Summary:</label>
+                            <label class="field-label">Edit Summary:</label>
                             <input type="text" id="edit-h-title-${h.id}" value="${h.title}">
-                            <div style="display:flex; gap:6px; justify-content:flex-end; margin-top: 4px;">
+                            <div style="display:flex; gap:6px; justify-content:flex-end; margin-top: 6px;">
                                 <button class="btn btn-success btn-small" onclick="saveHearingEdit('${caseId}', '${h.id}')">Save</button>
                                 <button class="btn btn-secondary btn-small" onclick="cancelEditHearing('${caseId}')">Cancel</button>
                             </div>
@@ -609,12 +906,12 @@
                 }
 
                 return `
-                    <div class="hearing-item ${h.status === 'done' ? 'done' : ''}">
+                    <div class="hearing-item ${h.status === 'done' ? 'done' : ''}" style="display:flex; justify-content:space-between; align-items:center; padding: 12px 0; border-bottom: 1px solid var(--border);">
                         <div>
                             <strong style="font-size:0.88rem; color:var(--primary);">${formatDateTime(h.date)}</strong><br>
                             <span style="font-size:0.85rem;">${h.title}</span>
                         </div>
-                        <div style="display:flex; gap:4px; flex-wrap:wrap; justify-content:flex-end;">
+                        <div style="display:flex; gap:4px;">
                             <button class="btn btn-secondary btn-small" onclick="startEditHearing('${caseId}', '${h.id}')">✏️</button>
                             <button class="btn ${h.status === 'done' ? 'btn-secondary' : 'btn-success'} btn-small" 
                                     onclick="toggleHearing('${caseId}', '${h.id}')">
@@ -627,65 +924,56 @@
             }).join('');
 
         container.innerHTML = `
-            <button class="btn btn-secondary" style="margin-bottom:12px;" onclick="navigate('cases')">&larr; Back</button>
-            <div class="card">
-                ${titleHtml}
-                <label style="font-weight:700; font-size:0.85rem; color:var(--primary);">Notes / Reference (Auto-saves):</label>
-                <textarea id="notes" placeholder="Type case notes..." oninput="saveNotes('${caseId}', this.value)">${c.notes || ''}</textarea>
+            <div class="flex-between" style="margin-bottom:12px;">
+                <button class="btn btn-secondary btn-small" onclick="navigate('cases')">&larr; Back to Cases</button>
+                <div style="display:flex; gap:6px;">
+                    <button class="btn btn-warning btn-small" onclick="toggleArchiveCase('${c.id}')">
+                        ${c.archived ? 'Unarchive Case' : 'Archive Case'}
+                    </button>
+                    <button class="btn btn-danger btn-small" onclick="deleteCase('${c.id}')">Delete Case</button>
+                </div>
             </div>
 
             <div class="card">
-                <h3 style="margin-top:0; font-size:1rem; font-weight:700;">Add Hearing</h3>
-                <label style="font-weight:700; font-size:0.8rem; color:var(--primary);">Date & Time (Hours & Minutes):</label>
+                <h3 style="margin-top:0; font-size:1.05rem; color:var(--primary); font-weight:700;">Case Details</h3>
+                
+                <label class="field-label">Case Title / Number</label>
+                <input type="text" value="${c.title}" onchange="updateCaseField('${caseId}', 'title', this.value)">
+
+                <label class="field-label">Client Name</label>
+                <input type="text" value="${c.clientName || ''}" placeholder="Client Name" onchange="updateCaseField('${caseId}', 'clientName', this.value)">
+
+                <label class="field-label">Client Mobile Phone</label>
+                <input type="tel" value="${c.clientPhone || ''}" placeholder="Client Mobile" onchange="updateCaseField('${caseId}', 'clientPhone', this.value)">
+
+                <label class="field-label">Summary of Case</label>
+                <input type="text" value="${c.summary || ''}" placeholder="Brief Case Summary" onchange="updateCaseField('${caseId}', 'summary', this.value)">
+
+                <label class="field-label">Notes / Reference (Auto-saves):</label>
+                <textarea placeholder="Type detailed case notes here..." oninput="updateCaseField('${caseId}', 'notes', this.value)">${c.notes || ''}</textarea>
+            </div>
+
+            <div class="card">
+                <h3 style="margin-top:0; font-size:1rem; font-weight:700; color:var(--primary);">Add Scheduled Hearing</h3>
+                <label class="field-label">Date & Time:</label>
                 <input type="datetime-local" id="h-date">
-                <input type="text" id="h-title" placeholder="Hearing summary...">
-                <button class="btn btn-primary" style="width:100%;" onclick="addHearing('${caseId}')">Add Hearing</button>
-                <div style="margin-top:12px;">${hearingsList || '<p style="font-size:0.85rem; color:#8e8e93;">No hearings scheduled.</p>'}</div>
+                <input type="text" id="h-title" placeholder="Hearing summary / stage (e.g. Evidence, Arguments)...">
+                <button class="btn btn-primary" style="width:100%; margin-top:4px;" onclick="addHearing('${caseId}')">+ Add Hearing</button>
+
+                <div style="margin-top:18px;">
+                    <h4 style="margin:0 0 10px 0; font-size:0.9rem; color:var(--primary);">Hearing History</h4>
+                    ${hearingsList || '<p style="font-size:0.85rem; color:var(--subtext);">No hearings added yet.</p>'}
+                </div>
             </div>
         `;
     }
 
-    // --- INLINE CASE & TITLE MUTATIONS ---
-    function showAddCaseForm() {
-        isAddingCase = true;
-        navigate('cases');
-    }
-
-    function cancelAddCase() {
-        isAddingCase = false;
-        navigate('cases');
-    }
-
-    function saveNewCaseInline() {
-        const input = document.getElementById('new-case-title-input');
-        if (input && input.value.trim()) {
-            db.cases.push({ id: 'c_' + Date.now(), title: input.value.trim(), notes: '', hearings: [] });
-            isAddingCase = false;
+    // --- CASE FIELD MUTATIONS ---
+    function updateCaseField(caseId, field, val) {
+        const c = db.cases.find(x => x.id === caseId);
+        if (c) {
+            c[field] = val;
             autoSave();
-            navigate('cases');
-        }
-    }
-
-    function startEditCaseTitle(caseId) {
-        editingTitleCaseId = caseId;
-        navigate('case-detail', caseId);
-    }
-
-    function cancelCaseTitleEdit(caseId) {
-        editingTitleCaseId = null;
-        navigate('case-detail', caseId);
-    }
-
-    function saveCaseTitleInline(caseId) {
-        const input = document.getElementById('edit-case-title-input');
-        if (input && input.value.trim()) {
-            const c = db.cases.find(x => x.id === caseId);
-            if (c) {
-                c.title = input.value.trim();
-                editingTitleCaseId = null;
-                autoSave();
-                navigate('case-detail', caseId);
-            }
         }
     }
 
@@ -715,24 +1003,11 @@
         navigate('case-detail', caseId);
     }
 
-    function deleteCase(id) {
-        if (confirm("Delete this case?")) {
-            db.cases = db.cases.filter(c => c.id !== id);
-            autoSave();
-            navigate('cases');
-        }
-    }
-
-    function saveNotes(caseId, val) {
-        const c = db.cases.find(x => x.id === caseId);
-        if (c) { c.notes = val; autoSave(); }
-    }
-
     function addHearing(caseId) {
         const d = document.getElementById('h-date').value;
         const t = document.getElementById('h-title').value;
-        if (!d || !t) return;
-        
+        if (!d || !t) return alert("Please select date/time and enter a summary.");
+
         const c = db.cases.find(x => x.id === caseId);
         if (!c.hearings) c.hearings = [];
         c.hearings.push({ id: 'h_' + Date.now(), date: d, title: t, status: 'pending' });
@@ -753,22 +1028,6 @@
         c.hearings = c.hearings.filter(x => x.id !== hId);
         autoSave();
         navigate('case-detail', caseId);
-    }
-
-    // --- DATE/TIME HELPERS ---
-    function formatDateTime(str) {
-        if (!str) return '';
-        const d = new Date(str);
-        if (isNaN(d.getTime())) return str;
-        return d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) + 
-               ' at ' + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: true });
-    }
-
-    function formatTimeOnly(str) {
-        if (!str) return '';
-        const d = new Date(str);
-        if (isNaN(d.getTime())) return '';
-        return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: true });
     }
 
     // Boot App
