@@ -183,11 +183,11 @@
             box-shadow: var(--shadow-sm);
         }
 
-        .card.interactive {
+        .card.interactive, .aim-item.interactive, .reminder-item.interactive {
             cursor: pointer;
             transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s;
         }
-        .card.interactive:active {
+        .card.interactive:active, .aim-item.interactive:active, .reminder-item.interactive:active {
             transform: scale(0.985);
             background-color: #FAFCFA;
         }
@@ -494,11 +494,20 @@
     let selectedCalDateKey = new Date().toISOString().split('T')[0];
     let currentView = 'aims';
     let currentPlaceFilter = 'All';
+
+    // Toggle forms & Edit States
     let isAddingAim = false;
+    let editingAimId = null;
+
     let isAddingPlace = false;
+    let editingPlaceId = null;
+
     let isAddingReminder = false;
+    let editingReminderId = null;
+
     let isAddingNote = false;
     let showCompletedReminders = false;
+    
     let fileSha = null;
     let debounceTimer = null;
 
@@ -771,10 +780,10 @@
             if (btn) btn.classList.toggle('active', v === view);
         });
 
-        if (view !== 'aims') isAddingAim = false;
-        if (view !== 'places') isAddingPlace = false;
-        if (view !== 'reminders') isAddingReminder = false;
-        if (view !== 'notes') isAddingNote = false;
+        if (view !== 'aims') { isAddingAim = false; editingAimId = null; }
+        if (view !== 'places') { isAddingPlace = false; editingPlaceId = null; }
+        if (view !== 'reminders') { isAddingReminder = false; editingReminderId = null; }
+        if (view !== 'notes') { isAddingNote = false; }
 
         const app = document.getElementById('app-content');
         app.innerHTML = '';
@@ -959,36 +968,55 @@
             html += `<p style="color:var(--text-muted); text-align:center; padding: 28px;">No daily aims set. Tap "+ New Aim" to build your routine.</p>`;
         } else {
             db.aims.forEach(aim => {
-                const isDoneToday = !!(aim.history && aim.history[todayKey]);
-                const aimStats = calculateAimSuccess(aim);
-
-                html += `
-                    <div class="aim-item ${isDoneToday ? 'done' : ''}">
-                        <div style="display:flex; align-items:center; flex:1;">
-                            <div class="checkbox-btn ${isDoneToday ? 'checked' : ''}" onclick="toggleAimToday('${aim.id}')">
-                                ${isDoneToday ? '✓' : ''}
+                if (editingAimId === aim.id) {
+                    html += `
+                        <div class="card" style="background: var(--accent-subtle); margin-bottom: 12px;">
+                            <h3 style="margin-top:0; font-size:0.95rem; font-weight:700; color:var(--primary);">Edit Aim</h3>
+                            <label class="field-label">Aim Title</label>
+                            <input type="text" id="edit-aim-title-${aim.id}" value="${aim.title}">
+                            <label class="field-label">Category</label>
+                            <input type="text" id="edit-aim-category-${aim.id}" value="${aim.category || ''}">
+                            <div style="display:flex; gap:6px; justify-content:flex-end; margin-top:8px;">
+                                <button class="btn btn-success btn-small" onclick="saveAimEdit('${aim.id}')">Save</button>
+                                <button class="btn btn-secondary btn-small" onclick="cancelEditAim()">Cancel</button>
                             </div>
-                            <div style="flex:1; padding-right:10px;">
-                                <div class="aim-title" style="font-weight:700; font-size:0.95rem; color:var(--text-main);">${aim.title}</div>
-                                <div style="font-size:0.78rem; color:var(--text-muted); margin-top:3px; display:flex; gap:10px; align-items:center;">
-                                    <span>🏷️ ${aim.category || 'Habit'}</span>
-                                    <span>📊 ${aimStats.rate}% success rate</span>
+                        </div>
+                    `;
+                } else {
+                    const isDoneToday = !!(aim.history && aim.history[todayKey]);
+                    const aimStats = calculateAimSuccess(aim);
+
+                    html += `
+                        <div class="aim-item interactive ${isDoneToday ? 'done' : ''}" onclick="startEditAim('${aim.id}')">
+                            <div style="display:flex; align-items:center; flex:1;">
+                                <div class="checkbox-btn ${isDoneToday ? 'checked' : ''}" onclick="event.stopPropagation(); toggleAimToday('${aim.id}')">
+                                    ${isDoneToday ? '✓' : ''}
+                                </div>
+                                <div style="flex:1; padding-right:10px;">
+                                    <div class="aim-title" style="font-weight:700; font-size:0.95rem; color:var(--text-main);">${aim.title}</div>
+                                    <div style="font-size:0.78rem; color:var(--text-muted); margin-top:3px; display:flex; gap:10px; align-items:center;">
+                                        <span>🏷️ ${aim.category || 'Habit'}</span>
+                                        <span>📊 ${aimStats.rate}% success rate</span>
+                                    </div>
                                 </div>
                             </div>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <button class="btn btn-danger btn-small" onclick="event.stopPropagation(); deleteAim('${aim.id}')">✕</button>
+                            </div>
                         </div>
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <button class="btn btn-danger btn-small" onclick="deleteAim('${aim.id}')">✕</button>
-                        </div>
-                    </div>
-                `;
+                    `;
+                }
             });
         }
 
         container.innerHTML = html;
     }
 
-    function showAddAimForm() { isAddingAim = true; renderAimsView(document.getElementById('app-content')); }
+    function showAddAimForm() { isAddingAim = true; editingAimId = null; renderAimsView(document.getElementById('app-content')); }
     function cancelAddAim() { isAddingAim = false; renderAimsView(document.getElementById('app-content')); }
+
+    function startEditAim(id) { editingAimId = id; isAddingAim = false; renderAimsView(document.getElementById('app-content')); }
+    function cancelEditAim() { editingAimId = null; renderAimsView(document.getElementById('app-content')); }
 
     function saveNewAim() {
         const title = document.getElementById('aim-title').value.trim();
@@ -1007,6 +1035,22 @@
         isAddingAim = false;
         autoSave();
         renderAimsView(document.getElementById('app-content'));
+    }
+
+    function saveAimEdit(id) {
+        const title = document.getElementById(`edit-aim-title-${id}`).value.trim();
+        if (!title) return alert("Please enter an Aim Title");
+
+        const category = document.getElementById(`edit-aim-category-${id}`).value.trim() || 'Routine';
+
+        const aim = db.aims.find(a => a.id === id);
+        if (aim) {
+            aim.title = title;
+            aim.category = category;
+            editingAimId = null;
+            autoSave();
+            renderAimsView(document.getElementById('app-content'));
+        }
     }
 
     function toggleAimToday(aimId) {
@@ -1112,45 +1156,98 @@
             html += `<p style="color:var(--text-muted); text-align:center; padding: 28px;">No places added in "${currentPlaceFilter}". Tap "+ Add Place" to list one.</p>`;
         } else {
             filteredPlaces.forEach(p => {
-                html += `
-                    <div class="card">
-                        <div class="flex-between" style="margin-bottom:6px;">
-                            <div>
-                                <strong style="font-size:1.05rem; color:var(--primary-light);">${p.name}</strong>
-                                ${p.location ? `<div style="font-size:0.82rem; color:var(--text-muted); font-weight:600; margin-top:2px;">📍 ${p.location}</div>` : ''}
+                if (editingPlaceId === p.id) {
+                    html += `
+                        <div class="card" style="background: var(--accent-subtle); margin-bottom: 14px;">
+                            <h3 style="margin-top:0; font-size:1rem; font-weight:700; color:var(--primary);">Edit Place</h3>
+                            
+                            <label class="field-label">Place Name *</label>
+                            <input type="text" id="edit-place-name-${p.id}" value="${p.name}">
+
+                            <label class="field-label">Location / Neighborhood</label>
+                            <input type="text" id="edit-place-loc-${p.id}" value="${p.location || ''}">
+
+                            <div style="display:flex; gap:10px;">
+                                <div style="flex:1;">
+                                    <label class="field-label">Category</label>
+                                    <select id="edit-place-category-${p.id}">
+                                        <option value="Restaurants" ${p.category === 'Restaurants' ? 'selected' : ''}>Restaurants</option>
+                                        <option value="Cafes" ${p.category === 'Cafes' ? 'selected' : ''}>Cafes</option>
+                                        <option value="Temples" ${p.category === 'Temples' ? 'selected' : ''}>Temples</option>
+                                        <option value="Parks" ${p.category === 'Parks' ? 'selected' : ''}>Parks</option>
+                                        <option value="Others" ${p.category === 'Others' ? 'selected' : ''}>Others</option>
+                                    </select>
+                                </div>
+                                <div style="flex:1;">
+                                    <label class="field-label">Rating</label>
+                                    <select id="edit-place-rating-${p.id}">
+                                        <option value="5" ${p.rating === '5' ? 'selected' : ''}>5 Stars (★5)</option>
+                                        <option value="4" ${p.rating === '4' ? 'selected' : ''}>4 Stars (★4)</option>
+                                        <option value="3" ${p.rating === '3' ? 'selected' : ''}>3 Stars (★3)</option>
+                                        <option value="2" ${p.rating === '2' ? 'selected' : ''}>2 Stars (★2)</option>
+                                        <option value="1" ${p.rating === '1' ? 'selected' : ''}>1 Star (★1)</option>
+                                    </select>
+                                </div>
                             </div>
-                            <span class="badge ${p.visited ? 'badge-visited' : 'badge-wishlist'}">
-                                ${p.visited ? 'Visited' : 'Wishlist'}
-                            </span>
-                        </div>
 
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
-                            <span class="badge badge-cat">${p.category}</span>
-                            <div>${renderStars(p.rating)}</div>
-                        </div>
+                            <label class="field-label">Notes & Review</label>
+                            <textarea id="edit-place-notes-${p.id}">${p.notes || ''}</textarea>
 
-                        ${p.notes ? `
-                            <div style="margin-top:10px; padding-top:8px; border-top:1px solid var(--border); font-size:0.85rem; color:var(--text-main); line-height:1.4;">
-                                📝 ${p.notes}
+                            <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+                                <input type="checkbox" id="edit-place-visited-${p.id}" ${p.visited ? 'checked' : ''} style="width:auto; margin:0;">
+                                <label for="edit-place-visited-${p.id}" style="font-size:0.85rem; font-weight:600;">Already visited?</label>
                             </div>
-                        ` : ''}
 
-                        <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px;">
-                            <button class="btn btn-secondary btn-small" onclick="togglePlaceVisited('${p.id}')">
-                                ${p.visited ? 'Mark Unvisited' : 'Mark Visited'}
-                            </button>
-                            <button class="btn btn-danger btn-small" onclick="deletePlace('${p.id}')">✕ Delete</button>
+                            <div style="display:flex; gap:8px; justify-content:flex-end;">
+                                <button class="btn btn-success btn-small" onclick="savePlaceEdit('${p.id}')">Save Changes</button>
+                                <button class="btn btn-secondary btn-small" onclick="cancelEditPlace()">Cancel</button>
+                            </div>
                         </div>
-                    </div>
-                `;
+                    `;
+                } else {
+                    html += `
+                        <div class="card interactive" onclick="startEditPlace('${p.id}')">
+                            <div class="flex-between" style="margin-bottom:6px;">
+                                <div>
+                                    <strong style="font-size:1.05rem; color:var(--primary-light);">${p.name}</strong>
+                                    ${p.location ? `<div style="font-size:0.82rem; color:var(--text-muted); font-weight:600; margin-top:2px;">📍 ${p.location}</div>` : ''}
+                                </div>
+                                <span class="badge ${p.visited ? 'badge-visited' : 'badge-wishlist'}">
+                                    ${p.visited ? 'Visited' : 'Wishlist'}
+                                </span>
+                            </div>
+
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+                                <span class="badge badge-cat">${p.category}</span>
+                                <div>${renderStars(p.rating)}</div>
+                            </div>
+
+                            ${p.notes ? `
+                                <div style="margin-top:10px; padding-top:8px; border-top:1px solid var(--border); font-size:0.85rem; color:var(--text-main); line-height:1.4;">
+                                    📝 ${p.notes}
+                                </div>
+                            ` : ''}
+
+                            <div style="display:flex; gap:6px; justify-content:flex-end; margin-top:12px;">
+                                <button class="btn btn-secondary btn-small" onclick="event.stopPropagation(); togglePlaceVisited('${p.id}')">
+                                    ${p.visited ? 'Unmark' : 'Visited'}
+                                </button>
+                                <button class="btn btn-danger btn-small" onclick="event.stopPropagation(); deletePlace('${p.id}')">✕ Delete</button>
+                            </div>
+                        </div>
+                    `;
+                }
             });
         }
 
         container.innerHTML = html;
     }
 
-    function showAddPlaceForm() { isAddingPlace = true; renderPlacesView(document.getElementById('app-content')); }
+    function showAddPlaceForm() { isAddingPlace = true; editingPlaceId = null; renderPlacesView(document.getElementById('app-content')); }
     function cancelAddPlace() { isAddingPlace = false; renderPlacesView(document.getElementById('app-content')); }
+
+    function startEditPlace(id) { editingPlaceId = id; isAddingPlace = false; renderPlacesView(document.getElementById('app-content')); }
+    function cancelEditPlace() { editingPlaceId = null; renderPlacesView(document.getElementById('app-content')); }
 
     function saveNewPlace() {
         const name = document.getElementById('place-name').value.trim();
@@ -1175,6 +1272,31 @@
         isAddingPlace = false;
         autoSave();
         renderPlacesView(document.getElementById('app-content'));
+    }
+
+    function savePlaceEdit(id) {
+        const name = document.getElementById(`edit-place-name-${id}`).value.trim();
+        if (!name) return alert("Please enter the Place Name");
+
+        const location = document.getElementById(`edit-place-loc-${id}`).value.trim();
+        const category = document.getElementById(`edit-place-category-${id}`).value;
+        const rating = document.getElementById(`edit-place-rating-${id}`).value;
+        const notes = document.getElementById(`edit-place-notes-${id}`).value.trim();
+        const visited = document.getElementById(`edit-place-visited-${id}`).checked;
+
+        const p = db.places.find(x => x.id === id);
+        if (p) {
+            p.name = name;
+            p.location = location;
+            p.category = category;
+            p.rating = rating;
+            p.notes = notes;
+            p.visited = visited;
+
+            editingPlaceId = null;
+            autoSave();
+            renderPlacesView(document.getElementById('app-content'));
+        }
     }
 
     function togglePlaceVisited(id) {
@@ -1257,25 +1379,62 @@
             html += `<p style="color:var(--text-muted); text-align:center; padding: 28px;">No active reminders. Tap "+ New Reminder" to set one.</p>`;
         } else {
             pendingReminders.forEach(r => {
-                html += `
-                    <div class="reminder-item">
-                        <div style="display:flex; align-items:center; flex:1;">
-                            <div class="checkbox-btn" onclick="toggleReminder('${r.id}')"></div>
-                            <div style="flex:1; padding-right:10px;">
-                                <div class="reminder-title" style="font-weight:700; font-size:0.95rem; color:var(--text-main);">${r.title}</div>
-                                <div style="font-size:0.78rem; color:var(--text-muted); margin-top:3px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-                                    ${r.dueDate ? `<span>📅 ${formatDateTime(r.dueDate)}</span>` : ''}
-                                    ${r.category ? `<span>🏷️ ${r.category}</span>` : ''}
-                                    ${r.notes ? `<span>📝 ${r.notes}</span>` : ''}
+                if (editingReminderId === r.id) {
+                    html += `
+                        <div class="card" style="background: var(--accent-subtle); margin-bottom: 14px;">
+                            <h3 style="margin-top:0; font-size:1rem; font-weight:700; color:var(--primary);">Edit Reminder</h3>
+                            
+                            <label class="field-label">Reminder Title *</label>
+                            <input type="text" id="edit-rem-title-${r.id}" value="${r.title}">
+
+                            <label class="field-label">Due Date & Time</label>
+                            <input type="datetime-local" id="edit-rem-due-${r.id}" value="${r.dueDate || ''}">
+
+                            <div style="display:flex; gap:10px;">
+                                <div style="flex:1;">
+                                    <label class="field-label">Category</label>
+                                    <input type="text" id="edit-rem-category-${r.id}" value="${r.category || ''}">
+                                </div>
+                                <div style="flex:1;">
+                                    <label class="field-label">Priority</label>
+                                    <select id="edit-rem-priority-${r.id}">
+                                        <option value="low" ${r.priority === 'low' ? 'selected' : ''}>Low</option>
+                                        <option value="medium" ${r.priority === 'medium' ? 'selected' : ''}>Medium</option>
+                                        <option value="high" ${r.priority === 'high' ? 'selected' : ''}>High</option>
+                                    </select>
                                 </div>
                             </div>
+
+                            <label class="field-label">Notes</label>
+                            <input type="text" id="edit-rem-notes-${r.id}" value="${r.notes || ''}">
+
+                            <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:10px;">
+                                <button class="btn btn-success btn-small" onclick="saveReminderEdit('${r.id}')">Save Changes</button>
+                                <button class="btn btn-secondary btn-small" onclick="cancelEditReminder()">Cancel</button>
+                            </div>
                         </div>
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <span class="badge priority-${r.priority}">${r.priority.toUpperCase()}</span>
-                            <button class="btn btn-danger btn-small" onclick="deleteReminder('${r.id}')">✕</button>
+                    `;
+                } else {
+                    html += `
+                        <div class="reminder-item interactive" onclick="startEditReminder('${r.id}')">
+                            <div style="display:flex; align-items:center; flex:1;">
+                                <div class="checkbox-btn" onclick="event.stopPropagation(); toggleReminder('${r.id}')"></div>
+                                <div style="flex:1; padding-right:10px;">
+                                    <div class="reminder-title" style="font-weight:700; font-size:0.95rem; color:var(--text-main);">${r.title}</div>
+                                    <div style="font-size:0.78rem; color:var(--text-muted); margin-top:3px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                                        ${r.dueDate ? `<span>📅 ${formatDateTime(r.dueDate)}</span>` : ''}
+                                        ${r.category ? `<span>🏷️ ${r.category}</span>` : ''}
+                                        ${r.notes ? `<span>📝 ${r.notes}</span>` : ''}
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span class="badge priority-${r.priority}">${r.priority.toUpperCase()}</span>
+                                <button class="btn btn-danger btn-small" onclick="event.stopPropagation(); deleteReminder('${r.id}')">✕</button>
+                            </div>
                         </div>
-                    </div>
-                `;
+                    `;
+                }
             });
         }
 
@@ -1294,12 +1453,12 @@
                     html += `
                         <div class="reminder-item done">
                             <div style="display:flex; align-items:center; flex:1;">
-                                <div class="checkbox-btn checked" onclick="toggleReminder('${r.id}')">✓</div>
+                                <div class="checkbox-btn checked" onclick="event.stopPropagation(); toggleReminder('${r.id}')">✓</div>
                                 <div style="flex:1; padding-right:10px;">
                                     <div class="reminder-title" style="font-weight:600; font-size:0.95rem;">${r.title}</div>
                                 </div>
                             </div>
-                            <button class="btn btn-danger btn-small" onclick="deleteReminder('${r.id}')">✕</button>
+                            <button class="btn btn-danger btn-small" onclick="event.stopPropagation(); deleteReminder('${r.id}')">✕</button>
                         </div>
                     `;
                 });
@@ -1310,8 +1469,11 @@
         container.innerHTML = html;
     }
 
-    function showAddReminderForm() { isAddingReminder = true; renderRemindersView(document.getElementById('app-content')); }
+    function showAddReminderForm() { isAddingReminder = true; editingReminderId = null; renderRemindersView(document.getElementById('app-content')); }
     function cancelAddReminder() { isAddingReminder = false; renderRemindersView(document.getElementById('app-content')); }
+
+    function startEditReminder(id) { editingReminderId = id; isAddingReminder = false; renderRemindersView(document.getElementById('app-content')); }
+    function cancelEditReminder() { editingReminderId = null; renderRemindersView(document.getElementById('app-content')); }
 
     function saveNewReminder() {
         const title = document.getElementById('rem-title').value.trim();
@@ -1335,6 +1497,29 @@
         isAddingReminder = false;
         autoSave();
         renderRemindersView(document.getElementById('app-content'));
+    }
+
+    function saveReminderEdit(id) {
+        const title = document.getElementById(`edit-rem-title-${id}`).value.trim();
+        if (!title) return alert("Please enter a Reminder Title");
+
+        const dueDate = document.getElementById(`edit-rem-due-${id}`).value;
+        const category = document.getElementById(`edit-rem-category-${id}`).value.trim() || 'General';
+        const priority = document.getElementById(`edit-rem-priority-${id}`).value;
+        const notes = document.getElementById(`edit-rem-notes-${id}`).value.trim();
+
+        const r = db.reminders.find(x => x.id === id);
+        if (r) {
+            r.title = title;
+            r.dueDate = dueDate;
+            r.category = category;
+            r.priority = priority;
+            r.notes = notes;
+
+            editingReminderId = null;
+            autoSave();
+            renderRemindersView(document.getElementById('app-content'));
+        }
     }
 
     function toggleReminder(id) {
